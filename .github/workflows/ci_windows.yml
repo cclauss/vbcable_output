@@ -1,0 +1,57 @@
+name: ci_windows
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+jobs:
+  pytest:
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false  # https://github.com/actions/runner-images#available-images
+      matrix:  # https://github.com/actions/python-versions/releases
+        os: [windows-latest]  # , windows-11-arm]
+        # python-version: ["3.10", "3.12", "3.14", "3.14t", "3.15", "pypy-3.11"]
+        python-version: [3.x]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: AlekseyMartynov/action-vbcable-win@main
+      - uses: actions/checkout@v6
+      # - if: runner.os == 'Windows'
+      #   shell: pwsh
+      #   run: |
+      #     choco install vb-cable  # https://community.chocolatey.org/packages/vb-cable
+      #     # cat "C:\ProgramData\chocolatey\lib\vb-cable\tools\readme.txt"
+      #     # ls "C:\ProgramData\chocolatey\lib\vb-cable"
+      #     # ls "C:\ProgramData\chocolatey\lib\vb-cable\tools"
+      #     # VBCABLE_ControlPanel.exe
+      #     # VBCABLE_Setup_x64.exe
+      #     # VBCABLE_Setup.exe
+      #     & "$env:ProgramData\chocolatey\lib\vb-cable\tools\VBCABLE_Setup_x64.exe" '/S'
+      #     Start-Sleep -Seconds 10  # Allow driver registration to complete
+      #     Restart-Service -Name AudioEndpointBuilder -Force  # Enumerate newly installed audio endpoints (-Force stops dependent AudioSrv)
+      #     Start-Sleep -Seconds 3
+      #     Start-Service -Name AudioSrv  # Restart Windows Audio after endpoint builder is ready
+      #     Start-Sleep -Seconds 5  # Allow audio service to fully restart
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+          allow-prereleases: true
+
+      - run: pip install --upgrade pip
+      - run: pip install sounddevice
+      - shell: python  # Sanity check
+        run: |
+          import sounddevice
+          print(f"{sounddevice.query_devices() = }")  # No devices are found. Why?!?
+
+      - run: pip install vbcable_output
+      - shell: python  # Sanity check from PyPI
+        run: |
+          import vbcable_output
+          print(f"{vbcable_output.is_vbcable_installed() = }")
+          assert vbcable_output.is_vbcable_installed()  # How can we get this to pass?!?
+
+      - run: pip install --editable .  # Also, why does local pip install fail?
+
+      # - run: pytest
