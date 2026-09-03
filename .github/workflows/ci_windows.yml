@@ -16,7 +16,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: AlekseyMartynov/action-vbcable-win@main
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       # - if: runner.os == 'Windows'
       #   shell: pwsh
       #   run: |
@@ -33,7 +33,7 @@ jobs:
       #     Start-Sleep -Seconds 3
       #     Start-Service -Name AudioSrv  # Restart Windows Audio after endpoint builder is ready
       #     Start-Sleep -Seconds 5  # Allow audio service to fully restart
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
           allow-prereleases: true
